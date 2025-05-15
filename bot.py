@@ -27,32 +27,22 @@ def load_config():
         "allowed_user_ids": []
     }
 
-    try:
-        with open("api_key.txt", "r") as f:
-            config["openrouter_api_key"] = f.read().strip()
-    except FileNotFoundError:
-        logger.error("api_key.txt not found")
 
-    try:
-        with open("telegram_config.txt", "r") as f:
-            lines = f.readlines()
-            config["telegram_bot_token"] = lines[0].split("=")[1].strip()
-    except FileNotFoundError:
-        logger.error("telegram_config.txt not found")
+def load_config():
+    config = {
+        "openrouter_api_key": os.environ.get("OPEN_API_KEY", ""),
+        "telegram_bot_token": os.environ.get("BOT_TOKEN", ""),
+        "ai_model": os.environ.get("AI_MODEL", "openai/gpt-3.5-turbo"),
+        "allowed_user_ids": []
+    }
 
-    try:
-        with open("telegram_config.txt", "r") as f:
-            content = f.read()
-            # Extract user IDs from ALLOWED_USER_IDS line
-            if "ALLOWED_USER_IDS" in content:
-                user_ids_str = content.split("ALLOWED_USER_IDS")[1].split("=")[1].strip()
-                # Remove brackets, quotes and split by comma
-                user_ids = user_ids_str.replace("[", "").replace("]", "").replace("\"", "").replace("'", "")
-                config["allowed_user_ids"] = [uid.strip() for uid in user_ids.split(",")]
-    except FileNotFoundError:
-        logger.error("telegram_config.txt not found")
+    # Load allowed user IDs from environment variable (as comma-separated string)
+    allowed_ids = os.environ.get("ALLOWED_USER_IDS", "")
+    if allowed_ids:
+        config["allowed_user_ids"] = [uid.strip() for uid in allowed_ids.split(",") if uid.strip()]
 
     return config
+
 
 
 config = load_config()
